@@ -59,6 +59,61 @@ private static final GrayImageProcess static_object = new GrayImageProcess();
 			return rgb;
 
 		}
+	
+	/*
+	 * smooth the gray image ,output an int array
+	 */
+	public int[] SMOOTH(FloatImage image){
+		
+		float[] data = image.getData();
+		int[] rgb = new int[image.getWidth() * image.getHeight()];
+		float[] pels_smooth= new float[image.getWidth() * image.getHeight()];
+		float min=1.0f;
+	    float max=-1.0f;
+	    int _h=image.getHeight();
+	    int _w=image.getWidth();
+	    try{
+	        
+	        for(int i=0;i<_h;i++){
+	        for(int j=0;j<_w ;j++){
+	         if(i==0 || i==1 || i==_h-1 || i==_h-2 
+	            ||j==0 || j==1 || j==_w-1 || j==_w-2){
+	        	 pels_smooth[i*_w+j]=data[i*_w+j];
+	          }
+	          else{
+	           float average;
+	             //nine pixels in the middle
+	              average=(data[i*_w+j]+data[i*_w+j-1]+data[i*_w+j+1]
+	                      +data[(i-1)*_w+j]+data[(i-1)*_w+j-1]+data[(i-1)*_w+j+1]
+	                      +data[(i+1)*_w+j]+data[(i+1)*_w+j-1]+data[(i+1)*_w+j+1])/9;
+	              pels_smooth[i*_w+j]=average;
+	          }       
+	         if(pels_smooth[i*_w+j]<min)
+	           min=pels_smooth[i*_w+j];
+	          if(data[i*_w+j]>max)
+	           max=pels_smooth[i*_w+j];
+	         }
+	         }
+	        for(int i=0;i<_w*_h;i++){
+	        	pels_smooth[i]=(pels_smooth[i]-min)/(max-min);
+	          }
+	     
+	     }
+	     catch (Exception e) 
+	     {
+	             e.printStackTrace();
+	             //throw new Exception(e);
+	         } 
+		for (int i = 0; i < image.getWidth() * image.getHeight(); i++)
+		{
+			int r = Math.min(Math.max((int)(pels_smooth[ i ] * 255), 0), 255);
+			int g = Math.min(Math.max((int)(pels_smooth[ i ] * 255), 0), 255);
+			int b = Math.min(Math.max((int)(pels_smooth[ i ] * 255), 0), 255);
+			rgb[i] = r << 16 | g << 8 | b;
+		}
+		
+		return rgb;
+	}
 			
 	/*
 	 * input:gray image with FloatImage type,int array of processed data,outputstream

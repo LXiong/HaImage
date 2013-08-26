@@ -1,4 +1,4 @@
-package hipi.xmu.cases.image2gray;
+package hipi.xmu.cases.grayimagesmooth;
 
 import hipi.experiments.mapreduce.JPEGFileInputFormat;
 import hipi.experiments.mapreduce.JPEGSequenceFileInputFormat;
@@ -23,7 +23,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-public class Image2Gray extends Configured implements Tool{
+public class GrayImageSmooth extends Configured implements Tool{
 
 	public static class MyMapper extends Mapper<ImageHeader, FloatImage, IntWritable, LongWritable>
 	{
@@ -34,7 +34,7 @@ public class Image2Gray extends Configured implements Tool{
 		{
 			conf = jc.getConfiguration();
 			fileSystem = FileSystem.get(conf);
-			path = new Path( conf.get("image2gray.outdir"));
+			path = new Path( conf.get("GrayImageSmooth.outdir"));
 			fileSystem.mkdirs(path);
 		}
 		public void map(ImageHeader key, FloatImage value, Context context) throws IOException, InterruptedException{
@@ -46,8 +46,8 @@ public class Image2Gray extends Configured implements Tool{
 				//convet from rgb to gray
 				FloatImage gray = graytool.RGB2GRAY(value,key);
 				
-				//compute rgb array,neccessary data for later output.
-				int[] rgb =graytool.RGB2GRAYOUT(gray);
+				//smooth
+				int[] rgb =graytool.SMOOTH(gray);
 	
 				//note: images may have the same hash code
 				context.write(new IntWritable(1), new LongWritable(gray.hashCode()));
@@ -95,7 +95,7 @@ public class Image2Gray extends Configured implements Tool{
 			// Read in the configurations
 			if (args.length < 3)
 			{
-				System.out.println("Usage: image2gray <inputdir> <outputdir> <input type: hib, har, sequence, small_files>");
+				System.out.println("Usage: GrayImageSmooth <inputdir> <outputdir> <input type: hib, har, sequence, small_files>");
 				System.exit(0);
 			}
 
@@ -106,11 +106,11 @@ public class Image2Gray extends Configured implements Tool{
 			// set the dir to output the jpegs to
 			String outputPath = args[1];
 			String input_file_type = args[2];
-			conf.setStrings("image2gray.outdir", outputPath);
-			conf.setStrings("image2gray.filetype", input_file_type);
+			conf.setStrings("GrayImageSmooth.outdir", outputPath);
+			conf.setStrings("GrayImageSmooth.filetype", input_file_type);
 
-			Job job = new Job(conf, "image2gray");
-			job.setJarByClass(Image2Gray.class);
+			Job job = new Job(conf, "GrayImageSmooth");
+			job.setJarByClass(GrayImageSmooth.class);
 			job.setMapperClass(MyMapper.class);
 			job.setReducerClass(MyReducer.class);
 
@@ -139,7 +139,7 @@ public class Image2Gray extends Configured implements Tool{
 			else if (input_file_type.equals("sequence"))
 				job.setInputFormatClass(JPEGSequenceFileInputFormat.class);
 			else{
-				System.out.println("Usage: image2gray <inputdir> <outputdir> <input type: hib, har, sequence, small_files>");
+				System.out.println("Usage: GrayImageSmooth <inputdir> <outputdir> <input type: hib, har, sequence, small_files>");
 				System.exit(0);			
 			}
 
@@ -158,7 +158,7 @@ public class Image2Gray extends Configured implements Tool{
 			}
 		}
 		public static void main(String[] args) throws Exception {
-			int res = ToolRunner.run(new Image2Gray(), args);
+			int res = ToolRunner.run(new GrayImageSmooth(), args);
 			System.exit(res);
 		}
 	}
