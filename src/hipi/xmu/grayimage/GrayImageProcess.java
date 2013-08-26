@@ -114,6 +114,44 @@ private static final GrayImageProcess static_object = new GrayImageProcess();
 		
 		return rgb;
 	}
+	
+	/*
+	 * Histogram equalization
+	 */
+	public int[] HISTOGRAM(FloatImage image){
+		
+		float[] data = image.getData();
+		int[] rgb = new int[image.getWidth() * image.getHeight()];
+		int length=data.length;
+		int FrequenceGray[]=new int[length];
+		int SumGray[]=new int[256];
+		for (int i = 0; i < image.getWidth() * image.getHeight(); i++)
+		{
+			int gray = Math.min(Math.max((int)(data[ i ] * 255), 0), 255);
+			rgb[i]=gray;
+			FrequenceGray[gray]++;
+		}
+		SumGray[0]=FrequenceGray[0];
+		for(int i=1;i<256;i++)
+		{
+			SumGray[i]=SumGray[i-1]+FrequenceGray[i];
+		}
+		for(int i=0;i<256;i++)
+		{
+			SumGray[i]=SumGray[i]*255/length;
+		}
+		for(int i=0;i<image.getHeight();i++)
+		{
+			for(int j=0;j<image.getWidth();j++)
+			{
+				int k=i*image.getWidth()+j;
+				rgb[k]=SumGray[rgb[k]];
+				rgb[k] = rgb[k] << 16 |rgb[k] << 8 | rgb[k] ;
+			}
+		}
+		
+		return rgb;
+	}
 			
 	/*
 	 * input:gray image with FloatImage type,int array of processed data,outputstream
