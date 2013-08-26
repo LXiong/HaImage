@@ -152,6 +152,21 @@ private static final GrayImageProcess static_object = new GrayImageProcess();
 		
 		return rgb;
 	}
+	
+	/*
+	 * gray image threshold
+	 */
+	public int[] THRESHOLD(FloatImage image,int threshold)
+	{
+		
+		float[] data = image.getData();
+		int[] rgb = new int[image.getWidth() * image.getHeight()];
+		for (int i = 0; i < image.getWidth() * image.getHeight(); i++)
+		{
+			rgb[i] = (int) Math.min(Math.max((int) (data[i ] * 255), 0), 255)  > threshold ? 0xffffff:0x000000;
+		}
+		return rgb;
+	}
 			
 	/*
 	 * input:gray image with FloatImage type,int array of processed data,outputstream
